@@ -22,16 +22,16 @@ public class Pedido {
 
     @NotNull(message = "La fecha del pedido es obligatoria")
     @Temporal(TemporalType.TIMESTAMP)
-    private Date fecha;
+    private Date fecha = new Date();
 
-    @NotBlank(message = "El estado del pedido es obligatorio")
+    @NotNull(message = "El estado del pedido es obligatorio")
     @Enumerated(EnumType.STRING)
-    private Estado estado;
+    private Estado estado = Estado.PENDIENTE;
 
     @NotNull(message = "El total es obligatorio")
     @DecimalMin(value = "0.0", inclusive = false, message = "El total debe ser mayor a 0")
     @Column(name = "total")
-    private Double total;
+    private Double total = 0.0;
 
     @NotBlank(message = "La direccion es obligatorio")
     @Column(name = "direccion")
