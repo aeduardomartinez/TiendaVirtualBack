@@ -29,7 +29,7 @@ public class Usuario implements UserDetails {
     private String nombre;
 
     @NotBlank(message = "El apellido es obligatorio")
-    @Size(max = 100, message = "El nombre no puede tener más de 100 caracteres")
+    @Size(max = 100, message = "El apellido no puede tener más de 100 caracteres")
     @Column(name = "apellido")
     private String apellido;
 
@@ -45,7 +45,7 @@ public class Usuario implements UserDetails {
     private String correo;
 
     @NotBlank(message = "La contraseña es obligatoria")
-    @Size(min = 5, message = "La contraseña debe tener al menos 20 caracteres")
+    @Size(min = 5, message = "La contraseña debe tener al menos 5 caracteres")
     @Column(name = "password")
     private String contrasena;
 
@@ -65,12 +65,12 @@ public class Usuario implements UserDetails {
 
     @Override
     public String getPassword() {
-        return "";
+        return contrasena;
     }
 
     @Override
     public String getUsername() {
-        return "";
+        return correo;
     }
 
     @Override
@@ -100,5 +100,7 @@ public class Usuario implements UserDetails {
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Pedido> pedidos;
 
+    @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Carrito carrito;
 
 }

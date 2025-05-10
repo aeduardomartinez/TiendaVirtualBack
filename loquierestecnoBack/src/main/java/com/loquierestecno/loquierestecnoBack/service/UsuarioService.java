@@ -2,6 +2,7 @@ package com.loquierestecno.loquierestecnoBack.service;
 
 import com.loquierestecno.loquierestecnoBack.dto.RegistroUsuarioDTO;
 import com.loquierestecno.loquierestecnoBack.exceptions.EmailAlreadyExistsException;
+import com.loquierestecno.loquierestecnoBack.exceptions.UserNotFoundException;
 import com.loquierestecno.loquierestecnoBack.model.Usuario;
 import com.loquierestecno.loquierestecnoBack.repository.UsuarioRepository;
 import jakarta.annotation.PostConstruct;
@@ -56,6 +57,31 @@ public class UsuarioService {
         return usuarioRepository.findByCorreo(correo).get();
     }
 
-    //-----
+    //----- Método para editar un usuario -----\
+    @Transactional
+    public Usuario editarUsuario(Long id, RegistroUsuarioDTO dto) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
 
+        usuario.setNombre(dto.getNombre());
+        usuario.setApellido(dto.getApellido());
+        usuario.setCorreo(dto.getCorreo());
+        usuario.setDireccion(dto.getDireccion());
+        usuario.setTelefono(dto.getTelefono());
+        usuario.setRol(dto.getRol());
+
+        if (dto.getContrasena() != null && !dto.getContrasena().isEmpty()) {
+            usuario.setContrasena(passwordEncoder.encode(dto.getContrasena()));
+        }
+
+        return usuarioRepository.save(usuario);
+    }
+
+    //----- Método para eliminar un usuario -----\
+    @Transactional
+    public void eliminarUsuario(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
+        usuarioRepository.delete(usuario);
+    }
 }

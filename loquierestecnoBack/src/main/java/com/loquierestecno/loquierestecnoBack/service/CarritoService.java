@@ -23,6 +23,7 @@ public class CarritoService {
     private final PedidoRepository pedidoRepository;
 
     // Obtener el carrito de un usuario
+    @Transactional
     public Carrito obtenerCarritoPorUsuario(Long usuarioId) {
         return carritoRepository.findByUsuarioId(usuarioId)
                 .orElseGet(() -> {
@@ -33,6 +34,7 @@ public class CarritoService {
                     return carritoRepository.save(nuevoCarrito);
                 });
     }
+
 
     // Agregar un producto al carrito
     @Transactional
@@ -76,29 +78,16 @@ public class CarritoService {
 
         return carritoRepository.save(carrito);
     }
+
     @Transactional
-    public String eliminarProducto(EliminarCarritoRequest dto) {
-        Carrito carrito = obtenerCarritoPorUsuario(dto.getUsuarioId());
+    public void eliminarProductoDelCarrito(EliminarCarritoRequest request) {
+        Carrito carrito = carritoRepository.findByUsuarioId(request.getUsuarioId())
+                .orElseThrow(() -> new RuntimeException("Carrito no encontrado"));
 
-        Optional<DetalleCarrito> detalleExistente = carrito.getDetalles().stream()
-                .filter(detalle -> detalle.getProducto().getId().equals(dto.getProductoId()))
-                .findFirst();
+        DetalleCarrito detalle = detalleCarritoRepository.findByCarritoIdAndProductoId(carrito.getId(), request.getProductoId())
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado en el carrito"));
 
-        if (detalleExistente.isPresent()) {
-            DetalleCarrito detalle = detalleExistente.get();
-
-            // 🔥 ELIMINAR PRIMERO DE LA BD 🔥
-            detalleCarritoRepository.deleteById(detalle.getId());
-            carritoRepository.deleteById(carrito.getId());
-            detalleCarritoRepository.flush();
-
-            // 🧹 ELIMINAR DE LA LISTA EN MEMORIA
-            carrito.getDetalles().remove(detalle);
-
-            return "✅ Producto eliminado del carrito y de la base de datos";
-        } else {
-            return "⚠️ Producto no encontrado en el carrito";
-        }
+        detalleCarritoRepository.delete(detalle);
     }
 
 
@@ -106,11 +95,10 @@ public class CarritoService {
     // Vaciar el carrito
     @Transactional
     public void vaciarCarrito(Long usuarioId) {
-        Carrito carrito = obtenerCarritoPorUsuario(usuarioId);
-        detalleCarritoRepository.deleteAll(carrito.getDetalles());
-        carritoRepository.deleteById(carrito.getId());
-        carrito.getDetalles().clear();
-        carritoRepository.save(carrito);
+        Carrito carrito = carritoRepository.findByUsuarioId(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Carrito no encontrado"));
+
+        detalleCarritoRepository.deleteByCarritoId(carrito.getId());
     }
     @Transactional
     public Pedido crearPedido(CrearPedidoRequest dto) {
@@ -179,6 +167,31 @@ public class CarritoService {
 
         dto.setDetalles(detalles);
         return dto;
+    }
+
+    @Transactional
+    public Carrito obtenerTotalCarrito(Long usuarioId) {
+        return carritoRepository.findByUsuario(usuarioId)
+                .orElseGet(() -> {
+                    Usuario usuario = usuarioRepository.findById(usuarioId)
+                            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                    Carrito nuevoCarrito = new Carrito();
+                    nuevoCarrito.setUsuario(usuario);
+                    return carritoRepository.save(nuevoCarrito);
+                });
+    }
+    public List<MostrarDetalleCarritoDTO> obtenerDetallesCarrito(Long usuarioId) {
+        Carrito carrito = obtenerTotalCarrito(usuarioId);
+
+        return carrito.getDetalles().stream().map(detalle -> {
+            MostrarDetalleCarritoDTO dto = new MostrarDetalleCarritoDTO();
+            dto.setProductoId(detalle.getProducto().getId());
+            dto.setNombreProducto(detalle.getProducto().getNombre());
+            dto.setCantidad(detalle.getCantidad());
+            dto.setPrecioUnitario(detalle.getProducto().getPrecio());
+            dto.setTotal(detalle.getCantidad() * detalle.getProducto().getPrecio());
+            return dto;
+        }).toList();
     }
 
 

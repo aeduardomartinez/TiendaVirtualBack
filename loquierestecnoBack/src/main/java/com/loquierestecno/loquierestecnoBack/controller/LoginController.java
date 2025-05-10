@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/usuarios")
 @AllArgsConstructor
@@ -26,11 +28,11 @@ public class LoginController {
 
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity login(@RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getCorreo(), loginRequest.getContrasena()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        return ResponseEntity.ok("Login exitoso");
+        return ResponseEntity.ok(Map.of("mensaje","Login exitoso"));
     }
 
     @PostMapping("/authenticate")

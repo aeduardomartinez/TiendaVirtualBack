@@ -21,7 +21,7 @@ public class DetalleCarrito {
 
 
     @ManyToOne
-    @JoinColumn(name = "carrito_id", nullable = false)
+    @JoinColumn(name = "carrito_id", nullable = false )
     @NotNull(message = "El carrito es obligatorio")
     private Carrito carrito;
 

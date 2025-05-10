@@ -77,10 +77,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers("/api/usuarios/registro").permitAll()
-                        .requestMatchers("/api/producto/**").hasAuthority("SCOPE_ROLE_ADMINISTRADOR")
-                        .requestMatchers("/api/usuarios/login").permitAll()
-                        .requestMatchers("/api/usuarios/authenticate").permitAll()
+                        .requestMatchers("/api/usuarios/**").permitAll()
+                        .requestMatchers("/api/producto/**").permitAll()
                         .requestMatchers("/api/carrito/**").permitAll()
                         .requestMatchers("/api/admin/**").hasAuthority("SCOPE_ROLE_ADMINISTRADOR")
                         .requestMatchers("/api/cliente/**").hasRole("CLIENTE")
